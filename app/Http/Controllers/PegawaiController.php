@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\PegawaiModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PegawaiController extends Controller
 {
-    public function index() {
-        $data = DB::select('select * from pegawai');
+    public function index(Request $request) {
+        $data = PegawaiModel::all();
+        $nm_pegawai = $request->get('nm_pegawai');
+        if($nm_pegawai) {
+            $data = PegawaiModel::where('nm_pegawai', 'LIKE', "%$nm_pegawai%")->get();
+        } else {
+            $data = PegawaiModel::all();
+        }
 
         return response()->json($data);
     }
@@ -22,9 +29,19 @@ class PegawaiController extends Controller
         $dept = $request->post('dept');
         $jabatan = $request->post('jabatan');
 
-        $insert = DB::insert("INSERT INTO pegawai (nip, nm_pegawai, jenis_kelamin, agama, tempat_lahir, tgl_lahir, dept, jabatan)
-        values('$nip', '$nm_pegawai', '$jenis_kelamin', '$agama', '$tempat_lahir', '$tgl_lahir', '$dept', '$jabatan')");
+        //$insert = DB::insert("INSERT INTO pegawai (nip, nm_pegawai, jenis_kelamin, agama, tempat_lahir, tgl_lahir, dept, jabatan)
+        //values('$nip', '$nm_pegawai', '$jenis_kelamin', '$agama', '$tempat_lahir', '$tgl_lahir', '$dept', '$jabatan')");
 
+        $insert = PegawaiModel::insert([
+            'nip' => $nip,
+            'nm_pegawai' => $nm_pegawai,
+            'jenis_kelamin' => $jenis_kelamin,
+            'agama' => $agama,
+            'tempat_lahir' => $tempat_lahir,
+            'tgl_lahir' => $tgl_lahir,
+            'dept' => $dept,
+            'jabatan' => $jabatan
+        ]);
         if($insert) {
             return response()->json("Data berhasil diinput");
         } else {
@@ -40,9 +57,18 @@ class PegawaiController extends Controller
         $dept = $request->post('dept');
         $jabatan = $request->post('jabatan');
 
-        $update = DB::update("UPDATE pegawai SET nm_pegawai = '$nm_pegawai', jenis_kelamin = '$jenis_kelamin',
-        agama = '$agama', tempat_lahir = '$tempat_lahir', tgl_lahir = '$tgl_lahir', dept = '$dept', jabatan = '$jabatan' WHERE nip = '$nip';");
+        //$update = DB::update("UPDATE pegawai SET nm_pegawai = '$nm_pegawai', jenis_kelamin = '$jenis_kelamin',
+        //agama = '$agama', tempat_lahir = '$tempat_lahir', tgl_lahir = '$tgl_lahir', dept = '$dept', jabatan = '$jabatan' WHERE nip = '$nip';");
 
+        $update = PegawaiModel::where('nip', $nip)->update([
+            'nm_pegawai' => $nm_pegawai,
+            'jenis_kelamin' => $jenis_kelamin,
+            'agama' => $agama,
+            'tempat_lahir' => $tempat_lahir,
+            'tgl_lahir' => $tgl_lahir,
+            'dept' => $dept,
+            'jabatan' => $jabatan
+        ]);
         if($update) {
             return response()->json("Data berhasil di update");
         } else {
@@ -50,8 +76,9 @@ class PegawaiController extends Controller
         }
     }
     public function delete ($nip) {
-        $delete = DB::delete("DELETE from pegawai WHERE nip = '$nip'");
+        //$delete = DB::delete("DELETE from pegawai WHERE nip = '$nip'");
 
+        $delete = PegawaiModel::where('nip', $nip)->delete();
         if($delete) {
             return response()->json("Data berhasil di delete");
         } else {
